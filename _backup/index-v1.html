@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReqTookit — Lightweight Requirements Management</title>
+<link rel="icon" type="image/png" href="image/icon.png">
+<style>
+  :root{
+    --bg-0:#081120;
+    --bg-1:#0c1a2e;
+    --bg-2:#122540;
+    --bg-3:#1a3255;
+    --line:#24406b;
+    --line-soft:#1a3157;
+    --txt:#e6eefb;
+    --txt-dim:#93a8c7;
+    --txt-mute:#5f779c;
+    --accent:#5eb1ef;
+    --accent-2:#7fd1ff;
+    --accent-glow:rgba(94,177,239,.18);
+    --ok:#4ade80;
+    --warn:#fbbf24;
+    --info:#60a5fa;
+    --purple:#c084fc;
+    --teal:#2dd4bf;
+    --rose:#fb7185;
+    --radius:10px;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+    --mono:"SFMono-Regular","JetBrains Mono",Consolas,"Liberation Mono",Menlo,monospace;
+    --sans:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(94,177,239,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(45,212,191,.07), transparent 60%),
+      var(--bg-0);
+    color:var(--txt);
+    font-size:14px;
+    line-height:1.45;
+    overflow:hidden;
+  }
+  /* ============ TOP BAR ============ */
+  .topbar{
+    height:54px;display:flex;align-items:center;gap:14px;
+    padding:0 16px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,var(--bg-1),rgba(12,26,46,.85));
+    backdrop-filter:blur(8px);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+  .brand .logo{
+    width:28px;height:28px;border-radius:7px;
+    background:#ffffff;
+    display:grid;place-items:center;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,255,255,.14);
+  }
+  .brand .logo img{width:100%;height:100%;object-fit:cover;display:block}
+  .brand-name{display:flex;align-items:center;font-weight:700;letter-spacing:.3px}
+  .brand small{color:var(--txt-mute);font-weight:400;font-size:11px;display:block;letter-spacing:.5px;text-transform:uppercase}
+  .spacer{flex:1}
+  .search{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg-2);border:1px solid var(--line);
+    border-radius:8px;padding:6px 10px;min-width:240px;
+  }
+  .search input{
+    background:transparent;border:0;outline:0;color:var(--txt);
+    font-family:var(--sans);font-size:13px;width:100%;
+  }
+  .search input::placeholder{color:var(--txt-mute)}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--bg-2);border:1px solid var(--line);
+    color:var(--txt);padding:7px 12px;border-radius:8px;
+    font-size:13px;cursor:pointer;font-family:var(--sans);
+    transition:.15s;
+  }
+  .btn:hover{background:var(--bg-3);border-color:var(--accent)}
+  .btn.primary{
+    background:linear-gradient(135deg,var(--accent),#2563eb);
+    border-color:transparent;color:#06121f;font-weight:600;
+  }
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.danger:hover{border-color:var(--rose);color:var(--rose)}
+  .btn svg{width:14px;height:14px}
+  /* ============ LAYOUT ============ */
+  .shell{display:flex;height:calc(100vh - 54px)}
+  /* ---- Sidebar tree ---- */
+  .side{
+    width:340px;min-width:280px;border-right:1px solid var(--line);
+    background:rgba(10,21,36,.6);display:flex;flex-direction:column;
+  }
+  .side-head{
+    padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .side-head .title{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-mute);font-weight:600}
+  .side-actions{display:flex;gap:6px}
+  .side-actions .iconbtn{
+    width:26px;height:26px;border-radius:6px;border:1px solid var(--line);
+    background:var(--bg-2);color:var(--txt-dim);display:grid;place-items:center;cursor:pointer;
+  }
+  .side-actions .iconbtn:hover{color:var(--accent);border-color:var(--accent)}
+  .side-actions .iconbtn svg{width:13px;height:13px}
+  .tree{flex:1;overflow:auto;padding:8px 6px}
+  .tree-row{
+    display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;
+    cursor:pointer;user-select:false;font-size:13px;
+  }
+  .tree-row:hover{background:var(--bg-2)}
+  .tree-row.active{background:var(--accent-glow);box-shadow:inset 2px 0 0 var(--accent)}
+  .tree-row .chev{
+    width:14px;height:14px;flex:none;color:var(--txt-mute);
+    transition:transform .12s;display:grid;place-items:center;
+  }
+  .tree-row .chev.open{transform:rotate(90deg)}
+  .tree-row .chev.leaf{visibility:hidden}
+  .tree-row .dot{width:7px;height:7px;border-radius:2px;flex:none}
+  .tree-row .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tree-row .id{font-family:var(--mono);font-size:10.5px;color:var(--txt-mute)}
+  .tree-row.active .id{color:var(--accent-2)}
+  /* ---- Main ---- */
+  .main{flex:1;overflow:auto;display:flex;flex-direction:column}
+  .empty{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:var(--txt-mute);gap:12px;padding:40px;text-align:center;
+  }
+  .empty svg{width:64px;height:64px;opacity:.3}
+  .detail{padding:22px 28px;max-width:1100px;width:100%;margin:0 auto}
+  .d-head{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+  .d-head .titles{flex:1;min-width:260px}
+  .crumb{font-family:var(--mono);font-size:11px;color:var(--txt-mute);letter-spacing:.5px;margin-bottom:4px}
+  .d-title{font-size:22px;font-weight:700;line-height:1.25;color:var(--txt)}
+  .d-id{
+    font-family:var(--mono);font-size:12px;color:var(--accent-2);
+    background:var(--accent-glow);padding:2px 8px;border-radius:5px;
+  }
+  .d-actions{display:flex;gap:8px;flex-wrap:wrap}
+  /* Badges */
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;
+    border:1px solid var(--line);background:var(--bg-2);color:var(--txt-dim);
+  }
+  .badge b{color:var(--txt);font-weight:600}
+  .badge .cdot{width:8px;height:8px;border-radius:50%}
+  .badge.status-Draft{color:var(--txt-dim)}
+  .badge.status-Draft .cdot{background:#94a3b8}
+  .badge.status-InReview{color:var(--warn)}
+  .badge.status-InReview .cdot{background:var(--warn)}
+  .badge.status-Approved{color:var(--ok)}
+  .badge.status-Approved .cdot{background:var(--ok)}
+  .badge.status-Implemented{color:var(--info)}
+  .badge.status-Implemented .cdot{background:var(--info)}
+  .badge.status-Verified{color:var(--purple)}
+  .badge.status-Verified .cdot{background:var(--purple)}
+  .badge.status-Released{color:var(--teal)}
+  .badge.status-Released .cdot{background:var(--teal)}
+  .badge.asil{font-family:var(--mono);font-weight:700}
+  .badge.asil-A{color:#94a3b8;border-color:#475569}
+  .badge.asil-B{color:#86efac;border-color:#166534}
+  .badge.asil-C{color:#fcd34d;border-color:#92400e}
+  .badge.asil-D{color:#fca5a5;border-color:#991b1b}
+  .badge.asil-QM{color:var(--txt-dim)}
+  /* Sections */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .card{
+    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    border:1px solid var(--line-soft);border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .card.full{grid-column:1/-1}
+  .card label{
+    display:block;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--txt-mute);font-weight:600;margin-bottom:8px;
+  }
+  .card .body{color:var(--txt);white-space:pre-wrap;word-wrap:break-word}
+  .card .body.empty-txt{color:var(--txt-mute);font-style:italic}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .kv{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line-soft);font-size:13px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--txt-mute)}
+  .kv .v{font-family:var(--mono);color:var(--txt)}
+  /* Form controls */
+  select,input[type=text],input[type=date],textarea{
+    background:var(--bg-0);border:1px solid var(--line);color:var(--txt);
+    border-radius:7px;padding:7px 9px;font-family:var(--sans);font-size:13px;outline:none;
+    width:100%;
+  }
+  select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+  textarea{resize:vertical;min-height:70px;line-height:1.5}
+  /* Comments */
+  .comments{margin-top:18px}
+  .c-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .c-head .h{font-weight:600;font-size:14px}
+  .c-head .count{color:var(--txt-mute);font-size:12px}
+  .c-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .c-item{
+    background:var(--bg-1);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;
+  }
+  .c-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--txt-mute);margin-bottom:4px;font-family:var(--mono)}
+  .c-text{font-size:13px;color:var(--txt);white-space:pre-wrap;word-wrap:break-word}
+  .c-add{display:flex;flex-direction:column;gap:8px}
+  .c-add .row{display:flex;gap:8px}
+  .c-add input{flex:1}
+  /* Toast */
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--bg-3);border:1px solid var(--accent);color:var(--txt);
+    padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;
+    transition:.25s;box-shadow:var(--shadow);z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* Scrollbars */
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:var(--bg-3);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:var(--line);background-clip:content-box}
+  ::-webkit-scrollbar-track{background:transparent}
+  /* Responsive */
+  @media (max-width:880px){
+    .shell{flex-direction:column}
+    .side{width:100%;max-height:40vh;border-right:0;border-bottom:1px solid var(--line)}
+    .grid,.row2{grid-template-columns:1fr}
+    .search{min-width:140px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">
+      <img src="image/icon.png" alt="ReqTookit logo">
+    </div>
+    <div class="brand-name">ReqTookit</div>
+  </div>
+  <div class="search">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#5f779c" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="searchInput" type="text" placeholder="Search ID, title, description...">
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" id="btnExpandAll" title="Expand all">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    Expand
+  </button>
+  <button class="btn" id="btnCollapseAll" title="Collapse all">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/></svg>
+    Collapse
+  </button>
+  <button class="btn" id="btnExport" title="Export data as JSON">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+    Export
+  </button>
+  <button class="btn" id="btnImport" title="Import JSON">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+    Import
+  </button>
+  <input type="file" id="importFile" accept="application/json" style="display:none">
+  <button class="btn primary" id="btnNew">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    New Requirement
+  </button>
+</div>
+
+<div class="shell">
+  <!-- ===== Sidebar: tree ===== -->
+  <aside class="side">
+    <div class="side-head">
+      <span class="title">Requirements Tree</span>
+      <div class="side-actions">
+        <button class="iconbtn" id="btnAddChild" title="Add child to selected">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="iconbtn" id="btnDelete" title="Delete selected">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="tree" id="tree"></div>
+  </aside>
+
+  <!-- ===== Main: detail ===== -->
+  <main class="main" id="main">
+    <div class="empty" id="emptyState">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
+      </svg>
+      <div>Select a requirement from the tree, or click <b>New Requirement</b> to create one.</div>
+    </div>
+    <div class="detail" id="detail" style="display:none"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   ReqFlow — lightweight, client-side requirements manager.
+   Data persisted to localStorage; deployable as static files.
+   ============================================================ */
+const STORAGE_KEY = 'reqflow.tree.v1';
+
+const STATUSES = ['Draft','In Review','Approved','Implemented','Verified','Released'];
+const TYPES    = ['Functional','Non-functional'];
+const ASILS    = ['QM','A','B','C','D'];
+const CYBER    = ['Not Relevant','Relevant'];
+
+/* ---------- seed data (automotive brake-control example) ---------- */
+function seedData(){
+  return {
+    id:'ROOT', title:'Brake Control System (BCS)', isRoot:true,
+    description:'Top-level project node. All system, software and hardware requirements are decomposed below.',
+    status:'Approved', plannedStart:'2026-09-01', plannedEnd:'2027-06-30',
+    specialChar:'Functional', asil:'D', cyber:'Relevant',
+    verificationCriteria:'System-level test bench validation plus safety case review.',
+    comments:[
+      {author:'Safety Mgr', date:'2026-09-05', text:'ASIL D confirmed per hazard analysis HAZID-07.'}
+    ],
+    children:[
+      { id:'SYS', title:'System Requirements', isFolder:true, description:'Architectural and system-level requirements.',
+        status:'Approved', plannedStart:'2026-09-01', plannedEnd:'2026-11-30',
+        specialChar:'Functional', asil:'D', cyber:'Relevant',
+        verificationCriteria:'System integration tests.', comments:[],
+        children:[
+          { id:'REQ-SYS-001', title:'Provide deceleration upon driver brake input',
+            description:'The brake system shall generate a calibrated deceleration torque proportional to driver brake pedal demand, within the defined pedal-force-to-deceleration characteristic.',
+            status:'Approved', plannedStart:'2026-09-15', plannedEnd:'2026-12-20',
+            specialChar:'Functional', asil:'D', cyber:'Relevant',
+            verificationCriteria:'HIL test: pedal sweep 20 N–400 N; measured deceleration within ±5% of target curve.',
+            comments:[
+              {author:'Test Eng.', date:'2026-10-02', text:'Preliminary curve attached to test plan TP-SYS-11.'}
+            ], children:[] },
+          { id:'REQ-SYS-002', title:'Brake response latency <= 150 ms',
+            description:'The time from brake pedal signal valid to actuation pressure at the caliper shall not exceed 150 ms across the full operating temperature range (-40°C to +85°C).',
+            status:'In Review', plannedStart:'2026-10-01', plannedEnd:'2027-01-15',
+            specialChar:'Non-functional', asil:'D', cyber:'Relevant',
+            verificationCriteria:'Latency measured at 0°C, 25°C, 85°C; each corner validated, p95 <= 150 ms.',
+            comments:[], children:[] }
+        ]},
+      { id:'SW', title:'Software Requirements', isFolder:true, description:'Embedded software requirements for the brake ECU.',
+        status:'Approved', plannedStart:'2026-10-01', plannedEnd:'2027-04-30',
+        specialChar:'Functional', asil:'C', cyber:'Relevant',
+        verificationCriteria:'Unit + integration tests, code review per ISO 26262.', comments:[],
+        children:[
+          { id:'REQ-SW-001', title:'Sample wheel speed at 100 Hz',
+            description:'The brake control software shall sample all four wheel-speed sensors synchronously at 100 Hz and timestamp each sample with the 1 µs system clock.',
+            status:'Draft', plannedStart:'2026-11-01', plannedEnd:'2027-02-28',
+            specialChar:'Functional', asil:'C', cyber:'Not Relevant',
+            verificationCriteria:'Software-in-the-loop: sample jitter < 500 µs; log audit.',
+            comments:[], children:[] },
+          { id:'REQ-SW-002', title:'Detect actuator faults within 50 ms',
+            description:'The software shall diagnose actuator current, voltage and plausibility faults and enter a safe state within 50 ms of fault detection.',
+            status:'Implemented', plannedStart:'2026-10-15', plannedEnd:'2027-01-31',
+            specialChar:'Functional', asil:'D', cyber:'Relevant',
+            verificationCriteria:'Fault injection: 20 cases, each measured detection time <= 50 ms.',
+            comments:[
+              {author:'SW Lead', date:'2026-12-10', text:'Fault handler v2 merged; pending review.'}
+            ], children:[] }
+        ]},
+      { id:'HW', title:'Hardware Requirements', isFolder:true, description:'Electronic and mechanical hardware requirements.',
+        status:'Approved', plannedStart:'2026-09-15', plannedEnd:'2027-03-31',
+        specialChar:'Non-functional', asil:'B', cyber:'Not Relevant',
+        verificationCriteria:'Component-level bench + environmental tests.', comments:[],
+        children:[
+          { id:'REQ-HW-001', title:'Operate from 9 V to 16 V supply',
+            description:'The brake ECU shall remain fully functional and within specification for a supply voltage range of 9 V to 16 V, including load-dump tolerance per ISO 7637-2.',
+            status:'Verified', plannedStart:'2026-09-20', plannedEnd:'2026-12-15',
+            specialChar:'Non-functional', asil:'B', cyber:'Not Relevant',
+            verificationCriteria:'Power-cycling test at 9 V / 12 V / 16 V; 100 cycles, no fault logged.',
+            comments:[], children:[] }
+        ]}
+    ]
+  };
+}
+
+/* ---------- state ---------- */
+let tree = load();
+let selectedId = 'REQ-SYS-001';
+let expanded = new Set(['ROOT','SYS','SW','HW']);
+let filter = '';
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.warn('load failed',e); }
+  return seedData();
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(tree)); }
+  catch(e){ toast('Save failed: '+e.message); }
+}
+
+/* ---------- helpers ---------- */
+function findNode(id, node=tree, parent=null){
+  if(node.id===id) return {node,parent};
+  for(const c of (node.children||[])){
+    const r = findNode(id,c,node);
+    if(r) return r;
+  }
+  return null;
+}
+function nextId(prefix){
+  const re = new RegExp('^'+prefix+'-?(\\d+)$');
+  let max = 0;
+  (function walk(n){
+    const m = (n.id||'').match(re);
+    if(m) max = Math.max(max, parseInt(m[1],10));
+    (n.children||[]).forEach(walk);
+  })(tree);
+  const n = max+1;
+  return prefix + '-' + String(n).padStart(3,'0');
+}
+function statusDot(s){return 'var(--' + (
+  s==='Draft'?'#94a3b8':
+  s==='In Review'?'--warn':
+  s==='Approved'?'--ok':
+  s==='Implemented'?'--info':
+  s==='Verified'?'--purple':'--teal')+')';}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- tree rendering ---------- */
+function visibleByFilter(node){
+  if(!filter) return true;
+  const f = filter.toLowerCase();
+  const self = (node.id+' '+node.title+' '+(node.description||'')).toLowerCase().includes(f);
+  const kids = (node.children||[]).some(visibleByFilter);
+  return self || kids;
+}
+function renderTree(){
+  const el = document.getElementById('tree');
+  el.innerHTML = '';
+  walk(tree, 0, el);
+}
+function walk(node, depth, el){
+  if(filter && !visibleByFilter(node)) return;
+  const row = document.createElement('div');
+  row.className = 'tree-row' + (node.id===selectedId?' active':'');
+  row.style.paddingLeft = (8 + depth*16) + 'px';
+
+  const hasKids = (node.children||[]).length>0;
+  const isOpen = expanded.has(node.id);
+  const chev = document.createElement('span');
+  chev.className = 'chev' + (hasKids?(isOpen?' open':''):' leaf');
+  chev.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+  chev.onclick = (e)=>{ e.stopPropagation(); if(hasKids){ expanded.has(node.id)?expanded.delete(node.id):expanded.add(node.id); renderTree(); } };
+  row.appendChild(chev);
+
+  const dot = document.createElement('span');
+  dot.className = 'dot';
+  if(node.isRoot){ dot.style.background='linear-gradient(135deg,var(--accent),#2563eb)'; }
+  else if(node.isFolder){ dot.style.background='var(--txt-mute)'; }
+  else { dot.style.background = statusDot(node.status||'Draft'); }
+  row.appendChild(dot);
+
+  const lbl = document.createElement('span');
+  lbl.className = 'lbl';
+  lbl.textContent = node.title || '(untitled)';
+  row.appendChild(lbl);
+
+  const id = document.createElement('span');
+  id.className = 'id';
+  id.textContent = node.isFolder ? '' : node.id;
+  row.appendChild(id);
+
+  row.onclick = ()=>{ selectedId = node.id; renderTree(); renderDetail(); };
+  el.appendChild(row);
+
+  if(hasKids && (isOpen || filter)){
+    for(const c of node.children) walk(c, depth+1, el);
+  }
+}
+
+/* ---------- detail rendering ---------- */
+function renderDetail(){
+  const wrap = document.getElementById('detail');
+  const empty = document.getElementById('emptyState');
+  if(!selectedId){ empty.style.display='flex'; wrap.style.display='none'; return; }
+  const found = findNode(selectedId);
+  if(!found){ empty.style.display='flex'; wrap.style.display='none'; return; }
+  const {node, parent} = found;
+  empty.style.display='none';
+  wrap.style.display='block';
+
+  const path = breadcrumb(node);
+
+  wrap.innerHTML = `
+    <div class="d-head">
+      <div class="titles">
+        <div class="crumb">${path}</div>
+        <input class="d-title-input" id="f_title" style="font-size:22px;font-weight:700;background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 8px;margin:-4px -8px;color:var(--txt);width:100%;min-width:240px" value="${esc(node.title)}">
+      </div>
+      <div class="d-actions">
+        ${node.isRoot ? '' : `<span class="d-id">${esc(node.id)}</span>`}
+        <button class="btn" id="btnAddChild2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add Child
+        </button>
+        ${node.isRoot ? '' : `<button class="btn danger" id="btnDelete2">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Delete
+        </button>`}
+      </div>
+    </div>
+
+    <div class="badges">
+      <span class="badge status-${esc(node.status||'Draft')}"><span class="cdot"></span>Status: <b>${esc(node.status||'Draft')}</b></span>
+      <span class="badge"><span class="cdot" style="background:var(--accent)"></span>Type: <b>${esc(node.specialChar||'Functional')}</b></span>
+      <span class="badge asil asil-${esc(node.asil||'QM')}">ASIL ${esc(node.asil||'QM')}</span>
+      <span class="badge"><span class="cdot" style="background:${node.cyber==='Relevant'?'var(--rose)':'var(--txt-mute)'}"></span>Cyber: <b>${esc(node.cyber||'Not Relevant')}</b></span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <label>Status</label>
+        <select id="f_status">${STATUSES.map(s=>`<option ${s===node.status?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="card">
+        <label>Special Characteristics</label>
+        <select id="f_type">${TYPES.map(t=>`<option ${t===node.specialChar?'selected':''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="card">
+        <label>Planned Start Date</label>
+        <input type="date" id="f_start" value="${esc(node.plannedStart||'')}">
+      </div>
+      <div class="card">
+        <label>Planned End Date</label>
+        <input type="date" id="f_end" value="${esc(node.plannedEnd||'')}">
+      </div>
+      <div class="card">
+        <label>ASIL (Functional Safety)</label>
+        <select id="f_asil">${ASILS.map(a=>`<option ${a===node.asil?'selected':''}>ASIL ${a}</option>`).join('')}</select>
+      </div>
+      <div class="card">
+        <label>Cybersecurity Relevance</label>
+        <select id="f_cyber">${CYBER.map(c=>`<option ${c===node.cyber?'selected':''}>${c}</option>`).join('')}</select>
+      </div>
+      <div class="card full">
+        <label>Description</label>
+        <textarea id="f_desc" rows="4">${esc(node.description||'')}</textarea>
+      </div>
+      <div class="card full">
+        <label>Verification Criteria</label>
+        <textarea id="f_verify" rows="3">${esc(node.verificationCriteria||'')}</textarea>
+      </div>
+    </div>
+
+    <div class="comments card full">
+      <div class="c-head">
+        <span class="h">Comments</span>
+        <span class="count">(${(node.comments||[]).length})</span>
+      </div>
+      <div class="c-list" id="c_list">
+        ${(node.comments||[]).map((c,i)=>`
+          <div class="c-item">
+            <div class="c-meta"><span>${esc(c.author)}</span><span>${esc(c.date)}</span></div>
+            <div class="c-text">${esc(c.text)}</div>
+          </div>`).join('') || '<div style="color:var(--txt-mute);font-size:13px">No comments yet.</div>'}
+      </div>
+      <div class="c-add">
+        <div class="row">
+          <input id="c_author" type="text" placeholder="Your name">
+        </div>
+        <textarea id="c_text" rows="2" placeholder="Write a comment..."></textarea>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn primary" id="btnAddComment">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Add Comment
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  /* --- wire up edits --- */
+  const bind = (id, key, renderAfter) => {
+    const e = document.getElementById(id);
+    e.addEventListener('change', ()=>{ node[key] = e.value; save(); if(renderAfter){ renderTree(); } else { renderDetail(); } });
+  };
+  bind('f_title','title',true);
+  bind('f_status','status',true);
+  bind('f_type','specialChar');
+  bind('f_start','plannedStart');
+  bind('f_end','plannedEnd');
+  bind('f_asil','asil',true);
+  bind('f_cyber','cyber');
+  bind('f_desc','description');
+  bind('f_verify','verificationCriteria');
+
+  document.getElementById('btnAddChild2').onclick = ()=> addChild(node);
+  const del2 = document.getElementById('btnDelete2');
+  if(del2) del2.onclick = ()=> deleteNode(node);
+  document.getElementById('btnAddComment').onclick = ()=> addComment(node);
+}
+
+function breadcrumb(node){
+  const parts = [];
+  (function walk(n, ancestors){
+    if(n.id===node.id){ parts.push(...ancestors.map(a=>a.title), n.title); return true; }
+    for(const c of (n.children||[])){ if(walk(c, [...ancestors, n])) return true; }
+    return false;
+  })(tree, []);
+  return parts.join('  /  ');
+}
+
+/* ---------- actions ---------- */
+function addChild(parent){
+  const isFolder = (parent.children||[]).length>0 && parent.isFolder;
+  let prefix = 'REQ';
+  if(parent.id==='SYS') prefix = 'REQ-SYS';
+  else if(parent.id==='SW') prefix = 'REQ-SW';
+  else if(parent.id==='HW') prefix = 'REQ-HW';
+  const id = nextId(prefix);
+  const child = {
+    id, title:'New requirement '+id,
+    description:'', status:'Draft',
+    plannedStart:'', plannedEnd:'',
+    specialChar:'Functional', asil: parent.asil||'QM',
+    cyber: parent.cyber||'Not Relevant',
+    verificationCriteria:'', comments:[], children:[]
+  };
+  parent.children = parent.children||[];
+  parent.children.push(child);
+  expanded.add(parent.id);
+  save();
+  selectedId = id;
+  renderTree(); renderDetail();
+  toast('Created '+id);
+}
+function addTopLevel(){
+  // add a new folder under root
+  const folders = (tree.children||[]).filter(c=>c.isFolder);
+  const letter = String.fromCharCode(65 + folders.length); // A, B, C...
+  const folder = {
+    id: letter, title:'New Category ' + letter, isFolder:true,
+    description:'', status:'Draft', plannedStart:'', plannedEnd:'',
+    specialChar:'Functional', asil:'QM', cyber:'Not Relevant',
+    verificationCriteria:'', comments:[], children:[]
+  };
+  tree.children.push(folder);
+  expanded.add(tree.id); expanded.add(folder.id);
+  save();
+  selectedId = folder.id;
+  renderTree(); renderDetail();
+  toast('Created category ' + letter);
+}
+function deleteNode(node){
+  if(node.isRoot){ toast('Cannot delete root node'); return; }
+  if(!confirm(`Delete requirement "${node.title}" (${node.id}) and all its children?`)) return;
+  const {parent} = findNode(node.id);
+  if(parent){
+    parent.children = parent.children.filter(c=>c.id!==node.id);
+    save();
+    selectedId = parent.id;
+    renderTree(); renderDetail();
+    toast('Deleted '+node.id);
+  }
+}
+function addComment(node){
+  const author = document.getElementById('c_author').value.trim() || 'Anonymous';
+  const text = document.getElementById('c_text').value.trim();
+  if(!text){ toast('Comment text is empty'); return; }
+  node.comments = node.comments||[];
+  node.comments.push({
+    author, text,
+    date: new Date().toISOString().slice(0,10)
+  });
+  save();
+  renderDetail();
+  toast('Comment added');
+}
+
+/* ---------- toolbar ---------- */
+document.getElementById('btnNew').onclick = ()=>{
+  // If a folder is selected, add child to it; otherwise add a new top-level folder
+  const found = selectedId ? findNode(selectedId) : null;
+  if(found && (found.node.isFolder || found.node.isRoot)) addChild(found.node);
+  else if(found && found.parent) addChild(found.parent.isFolder ? found.parent : tree);
+  else addTopLevel();
+};
+document.getElementById('btnAddChild').onclick = ()=>{
+  const found = selectedId ? findNode(selectedId) : null;
+  if(!found){ toast('Select a node first'); return; }
+  addChild(found.node);
+};
+document.getElementById('btnDelete').onclick = ()=>{
+  const found = selectedId ? findNode(selectedId) : null;
+  if(!found){ toast('Select a node first'); return; }
+  deleteNode(found.node);
+};
+document.getElementById('btnExpandAll').onclick = ()=>{
+  (function walk(n){ if((n.children||[]).length) expanded.add(n.id); (n.children||[]).forEach(walk); })(tree);
+  renderTree();
+};
+document.getElementById('btnCollapseAll').onclick = ()=>{
+  expanded = new Set(['ROOT']);
+  renderTree();
+};
+document.getElementById('searchInput').addEventListener('input', e=>{
+  filter = e.target.value.trim();
+  renderTree();
+});
+document.getElementById('btnExport').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(tree,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'reqflow-export.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Exported JSON');
+};
+document.getElementById('btnImport').onclick = ()=> document.getElementById('importFile').click();
+document.getElementById('importFile').addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data || !data.id) throw new Error('Invalid file');
+      tree = data;
+      expanded = new Set(['ROOT']);
+      selectedId = tree.id;
+      save(); renderTree(); renderDetail();
+      toast('Imported successfully');
+    }catch(err){ toast('Import failed: '+err.message); }
+  };
+  reader.readAsText(f);
+  e.target.value = '';
+});
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ---------- boot ---------- */
+renderTree();
+renderDetail();
+</script>
+</body>
+</html>
