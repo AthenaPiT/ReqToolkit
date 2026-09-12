@@ -108,7 +108,7 @@
   .seg button.active{background:var(--accent);color:#06121f;font-weight:600}
   .seg button svg{width:13px;height:13px}
   /* ---- 3-pane workspace ---- */
-  .pane-tree{width:370px;min-width:300px;border-right:1px solid var(--line);background:rgba(10,21,36,.6);display:flex;flex-direction:column}
+  .pane-tree{width:370px;min-width:0;border-right:1px solid var(--line);background:rgba(10,21,36,.6);display:flex;flex-direction:column}
   .tree-head{padding:12px 14px;border-bottom:1px solid var(--line-soft)}
   .tree-head .row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .tree-head .title{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-mute);font-weight:600}
@@ -130,7 +130,11 @@
   .field > label{display:block;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-mute);font-weight:600;margin-bottom:7px}
   .field input[type=text].big{font-size:16px;padding:10px 12px}
   .field textarea{min-height:96px}
-  .pane-props{width:310px;min-width:280px;border-left:1px solid var(--line);background:var(--bg-1);overflow-y:auto;padding:18px}
+  .pane-props{width:310px;min-width:0;border-left:1px solid var(--line);background:var(--bg-1);overflow-y:auto;padding:18px}
+  .splitter{width:6px;flex:none;cursor:col-resize;background:var(--line-soft);transition:background .15s;z-index:5}
+  .splitter:hover,.splitter.drag{background:var(--accent)}
+  body.resizing{cursor:col-resize;user-select:none}
+  body.resizing .pane-center{pointer-events:none}
   .props-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .props-head .t{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt-mute);font-weight:600}
   .props-head .pid{font-family:var(--mono);font-size:12px;color:var(--accent-2);font-weight:700}
@@ -339,6 +343,9 @@ let viewMode = 'list';   // 'list' | 'graph'
 let chart = null;
 let treeFilters = { status:'', asil:'', type:'' };
 let activeTab = 'desc';
+const PANE_KEY = 'reqtooki.panes.v1';
+let panePrefs = { tree:370, props:310 };
+try{ panePrefs = Object.assign(panePrefs, JSON.parse(localStorage.getItem(PANE_KEY)||'{}')); }catch(e){}
 
 /* ---------- helpers ---------- */
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -593,7 +600,7 @@ function renderListMode(){
   const p=getProject(activeProjectId);
   const body=document.getElementById('wsBody');
   body.innerHTML = `
-    <aside class="pane-tree">
+    <aside class="pane-tree" style="width:${panePrefs.tree}px">
       <div class="tree-head">
         <div class="row1">
           <span class="title">Requirements Tree</span>
@@ -607,14 +614,43 @@ function renderListMode(){
       </div>
       <div class="tree" id="tree"></div>
     </aside>
+    <div class="splitter" id="spL" title="Drag to resize"></div>
     <main class="pane-center" id="paneCenter"></main>
-    <aside class="pane-props" id="paneProps"></aside>
+    <div class="splitter" id="spR" title="Drag to resize"></div>
+    <aside class="pane-props" id="paneProps" style="width:${panePrefs.props}px"></aside>
     <div class="drawer" id="drawer"><div class="inner" id="drawerInner"></div></div>`;
   document.getElementById('f_status').onchange=e=>{ treeFilters.status=e.target.value; renderTreeSidebar(); };
   document.getElementById('f_asil').onchange=e=>{ treeFilters.asil=e.target.value; renderTreeSidebar(); };
   document.getElementById('f_type').onchange=e=>{ treeFilters.type=e.target.value; renderTreeSidebar(); };
   renderTreeSidebar();
   renderCenterAndProps();
+  initSplitters();
+}
+function initSplitters(){
+  const spL=document.getElementById('spL'), spR=document.getElementById('spR');
+  const tree=document.querySelector('.pane-tree'), props=document.querySelector('.pane-props');
+  function startDrag(e, side){
+    e.preventDefault();
+    const startX=e.clientX;
+    const startW = side==='L' ? tree.getBoundingClientRect().width : props.getBoundingClientRect().width;
+    document.body.classList.add('resizing');
+    function move(ev){
+      const dx=ev.clientX-startX;
+      let w;
+      if(side==='L'){ w=Math.max(260,Math.min(680,startW+dx)); tree.style.width=w+'px'; panePrefs.tree=Math.round(w); }
+      else { w=Math.max(260,Math.min(560,startW-dx)); props.style.width=w+'px'; panePrefs.props=Math.round(w); }
+    }
+    function up(){
+      document.body.classList.remove('resizing');
+      document.removeEventListener('mousemove',move);
+      document.removeEventListener('mouseup',up);
+      try{ localStorage.setItem(PANE_KEY, JSON.stringify(panePrefs)); }catch(err){}
+    }
+    document.addEventListener('mousemove',move);
+    document.addEventListener('mouseup',up);
+  }
+  if(spL) spL.onmousedown=e=>startDrag(e,'L');
+  if(spR) spR.onmousedown=e=>startDrag(e,'R');
 }
 function passesFilters(node){
   if(filter){
