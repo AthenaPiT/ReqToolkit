@@ -17,7 +17,31 @@
     --mono:"SFMono-Regular","JetBrains Mono",Consolas,Menlo,monospace;
     --sans:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif;
   }
+  :root[data-theme="dark"]{
+    --bg-0:#0f1115; --bg-1:#161a20; --bg-2:#1d222a; --bg-3:#2a3039;
+    --line:#2e3540; --line-soft:#232932;
+    --txt:#e8eaed; --txt-dim:#9aa3ad; --txt-mute:#6b7280;
+    --accent:#7fa8e0; --accent-2:#9cc0f0; --accent-glow:rgba(127,168,224,.16);
+  }
+  :root[data-theme="light"]{
+    --bg-0:#e9ecf1; --bg-1:#f5f7fa; --bg-2:#ffffff; --bg-3:#e6eaf1;
+    --line:#cfd6e2; --line-soft:#e2e6ee;
+    --txt:#1a2230; --txt-dim:#4a5568; --txt-mute:#8893a3;
+    --accent:#2563eb; --accent-2:#1d4ed8; --accent-glow:rgba(37,99,235,.12);
+  }
+  :root[data-theme="light"] body{background:var(--bg-0)}
+  :root[data-theme="light"] .card,
+  :root[data-theme="light"] .pane-props,
+  :root[data-theme="light"] .login-card,
+  :root[data-theme="light"] .modal,
+  :root[data-theme="light"] .drop,
+  :root[data-theme="light"] .toast{background-image:none}
+  :root[data-theme="light"] .rte-editor,
+  :root[data-theme="light"] select,
+  :root[data-theme="light"] input,
+  :root[data-theme="light"] textarea{color-scheme:light}
   *{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:dark}
   html,body{height:100%}
   body{
     font-family:var(--sans);
@@ -91,7 +115,11 @@
   .pcard{background:linear-gradient(180deg,var(--bg-1),var(--bg-2));border:1px solid var(--line-soft);border-radius:12px;padding:18px;cursor:pointer;transition:.15s;position:relative}
   .pcard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
   .pcard .pname{font-size:16px;font-weight:700;margin-bottom:6px}
-  .pcard .pdesc{color:var(--txt-dim);font-size:12.5px;min-height:34px;margin-bottom:12px}
+  .pcard .pdesc{color:var(--txt-dim);font-size:12.5px;min-height:34px;margin-bottom:10px}
+  .pcard .pstats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .stat-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:3px 9px;border-radius:999px;background:var(--bg-2);border:1px solid var(--line);color:var(--txt-dim)}
+  .stat-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--dot);flex:none}
+  .stat-pill b{color:var(--txt)}
   .pcard .pmeta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--txt-mute);font-family:var(--mono)}
   .pcard .pacts{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:.15s}
   .pcard:hover .pacts{opacity:1}
@@ -148,6 +176,10 @@
   .p-actions{display:flex;flex-direction:column;gap:8px;margin-top:18px}
   .p-actions .btn{justify-content:center}
   .p-actions .btn.primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:#06121f}
+  .icon-pick{display:flex;gap:8px}
+  .icopt{width:46px;height:38px;border-radius:7px;border:1px solid var(--line);background:var(--bg-0);color:var(--txt-dim);display:grid;place-items:center;cursor:pointer}
+  .icopt:hover{border-color:var(--accent);color:var(--txt)}
+  .icopt.sel{border-color:var(--accent);background:var(--accent-glow);color:var(--accent-2)}
   .btn.del{background:transparent;border-color:var(--rose);color:var(--rose);justify-content:center}
   .btn.del:hover{background:rgba(251,113,133,.12)}
   /* tree row new style */
@@ -165,6 +197,32 @@
   .hist-item .hm{display:flex;justify-content:space-between;color:var(--txt-mute);font-family:var(--mono);font-size:11px;margin-bottom:4px}
   .hist-item .ht{color:var(--txt)}
   .hist-item .ht b{color:var(--accent-2)}
+  /* status flow */
+  .flow{display:flex;align-items:flex-start;flex-wrap:wrap;row-gap:10px;margin-top:10px}
+  .flow-node{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex:none}
+  .flow-node .circle{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;border:2px solid var(--line);color:var(--txt-mute);background:var(--bg-2);transition:.15s}
+  .flow-node .lbl{font-size:11px;color:var(--txt-mute);text-align:center;max-width:90px}
+  .flow-node.done .circle{background:var(--ok);border-color:var(--ok);color:#06121f}
+  .flow-node.active .circle{background:var(--accent);border-color:var(--accent);color:#06121f;box-shadow:0 0 0 5px var(--accent-glow)}
+  .flow-node.active .lbl{color:var(--accent-2);font-weight:700}
+  .flow-arrow{flex:1;min-width:22px;height:2px;background:var(--line);margin:17px 2px 0}
+  .flow-arrow.done{background:var(--ok)}
+  /* rich text editor */
+  .rte-toolbar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:var(--bg-2);border:1px solid var(--line);border-bottom:0;border-radius:8px 8px 0 0;padding:6px 8px}
+  .rte-toolbar .tbtn{min-width:28px;height:28px;padding:0 6px;border:1px solid transparent;background:transparent;color:var(--txt-dim);border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .rte-toolbar .tbtn:hover{background:var(--bg-3);color:var(--txt)}
+  .rte-toolbar .tbtn.on{background:var(--accent-glow);color:var(--accent-2)}
+  .rte-toolbar select{font-size:12px;padding:3px 6px;background:var(--bg-0);color:var(--txt);border:1px solid var(--line);border-radius:5px}
+  .rte-toolbar .sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+  .rte-editor{min-height:150px;background:var(--bg-0);border:1px solid var(--line);border-radius:0 0 8px 8px;padding:10px 12px;outline:none;line-height:1.6;color:var(--txt)}
+  .rte-editor:focus{border-color:var(--accent)}
+  .rte-editor table{border:1px solid var(--line);border-collapse:collapse;margin:6px 0;width:100%}
+  .rte-editor td{border:1px solid var(--line);padding:6px 9px;min-width:50px}
+  .rte-editor ul,.rte-editor ol{padding-left:28px;margin:6px 0}
+  .rte-editor li{margin:2px 0}
+  .rte-editor ul ul,.rte-editor ol ol,.rte-editor ul ol,.rte-editor ol ul{padding-left:22px;margin:2px 0}
+  .rte-editor img{max-width:100%;border-radius:4px}
+  .rte-editor a{color:var(--accent-2)}
   .ws-body{flex:1;display:flex;overflow:hidden}
   .side{width:320px;min-width:260px;border-right:1px solid var(--line);background:rgba(10,21,36,.6);display:flex;flex-direction:column}
   .side-head{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line-soft)}
@@ -227,9 +285,11 @@
   #graph{position:absolute;inset:0}
   .g-hint{position:absolute;top:14px;left:14px;background:rgba(12,26,46,.85);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--txt-dim);z-index:5}
   /* drawer (graph node detail) */
-  .drawer{position:fixed;top:54px;right:0;bottom:0;width:420px;max-width:90vw;background:var(--bg-1);border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(100%);transition:transform .2s;overflow-y:auto;z-index:30}
+  .drawer{position:fixed;top:54px;right:0;bottom:0;width:420px;max-width:92vw;background:var(--bg-1);border-left:1px solid var(--line);box-shadow:var(--shadow);transform:translateX(100%);transition:transform .2s;overflow-y:auto;z-index:30}
   .drawer.open{transform:translateX(0)}
   .drawer .inner{padding:20px}
+  .drawer-resizer{position:absolute;left:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:31}
+  .drawer-resizer:hover{background:var(--accent)}
   /* modal */
   .modal-mask{position:fixed;inset:0;background:rgba(4,10,20,.6);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:60}
   .modal{width:440px;max-width:92vw;background:var(--bg-1);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:var(--shadow)}
@@ -277,7 +337,7 @@ function seedTree(){
     verificationCriteria:'System-level test bench validation plus safety case review.',
     comments:[{author:'Safety Mgr', date:'2026-09-05', text:'ASIL D confirmed per hazard analysis HAZID-07.'}],
     children:[
-      { id:'SYS', title:'System Requirements', isFolder:true, description:'Architectural and system-level requirements.',
+      { id:'SYS', title:'System Requirements', isFolder:true, icon:'grid2', description:'Architectural and system-level requirements.',
         status:'Approved', plannedStart:'2026-09-01', plannedEnd:'2026-11-30', specialChar:'Functional', asil:'D', cyber:'Relevant',
         verificationCriteria:'System integration tests.', comments:[], children:[
           { id:'REQ-SYS-001', title:'Provide deceleration upon driver brake input',
@@ -291,7 +351,7 @@ function seedTree(){
             verificationCriteria:'Latency measured at 0°C, 25°C, 85°C; each corner validated, p95 <= 150 ms.',
             comments:[], children:[] }
         ]},
-      { id:'SW', title:'Software Requirements', isFolder:true, description:'Embedded software requirements for the brake ECU.',
+      { id:'SW', title:'Software Requirements', isFolder:true, icon:'grid3', description:'Embedded software requirements for the brake ECU.',
         status:'Approved', plannedStart:'2026-10-01', plannedEnd:'2027-04-30', specialChar:'Functional', asil:'C', cyber:'Relevant',
         verificationCriteria:'Unit + integration tests, code review per ISO 26262.', comments:[], children:[
           { id:'REQ-SW-001', title:'Sample wheel speed at 100 Hz',
@@ -304,7 +364,7 @@ function seedTree(){
             verificationCriteria:'Fault injection: 20 cases, each measured detection time <= 50 ms.',
             comments:[{author:'SW Lead', date:'2026-12-10', text:'Fault handler v2 merged; pending review.'}], children:[] }
         ]},
-      { id:'HW', title:'Hardware Requirements', isFolder:true, description:'Electronic and mechanical hardware requirements.',
+      { id:'HW', title:'Hardware Requirements', isFolder:true, icon:'grid2', description:'Electronic and mechanical hardware requirements.',
         status:'Approved', plannedStart:'2026-09-15', plannedEnd:'2027-03-31', specialChar:'Non-functional', asil:'B', cyber:'Not Relevant',
         verificationCriteria:'Component-level bench + environmental tests.', comments:[], children:[
           { id:'REQ-HW-001', title:'Operate from 9 V to 16 V supply',
@@ -341,15 +401,39 @@ let expanded = new Set();
 let filter = '';
 let viewMode = 'list';   // 'list' | 'graph'
 let chart = null;
-let treeFilters = { status:'', asil:'', type:'' };
+let treeFilters = { status:'', asil:'', cyber:'', type:'' };
 let activeTab = 'desc';
 const PANE_KEY = 'reqtooki.panes.v1';
 let panePrefs = { tree:370, props:310 };
 try{ panePrefs = Object.assign(panePrefs, JSON.parse(localStorage.getItem(PANE_KEY)||'{}')); }catch(e){}
+const DRAWER_KEY = 'reqtooki.drawer.v1';
+let drawerW = 420;
+try{ drawerW = parseInt(localStorage.getItem(DRAWER_KEY))||420; }catch(e){}
 
 /* ---------- helpers ---------- */
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function me(){ return db.session ? db.users.find(u=>u.username===db.session.username) : null; }
+function toISODate(s){
+  if(!s) return '';
+  s=String(s).trim();
+  let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if(m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return m[3]+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');
+  return s;
+}
+function fmtDate(s){
+  const iso=toISODate(s);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return s||'—';
+  const [y,m,d]=iso.split('-');
+  return m+'/'+d+'/'+y;
+}
+function applyTheme(){
+  const u=me();
+  const t=(u&&u.theme)||'darkblue';
+  if(t==='darkblue') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.dataset.theme=t;
+}
 function getProject(id){ return db.projects.find(p=>p.id===id); }
 function findInTree(node, id, parent){
   if(node.id===id) return {node,parent};
@@ -368,6 +452,21 @@ function nextId(prefix, tree){
 }
 function statusColor(s){
   return {Draft:'#94a3b8','In Review':'#fbbf24',Approved:'#4ade80',Implemented:'#60a5fa',Verified:'#c084fc',Released:'#2dd4bf'}[s] || '#94a3b8';
+}
+function gridIconSVG(kind, size){
+  const s = size||14;
+  if(kind==='grid2'){
+    return `<svg viewBox="0 0 16 16" width="${s}" height="${s}" fill="currentColor" style="display:block">
+      <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+      <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>`;
+  }
+  if(kind==='grid3'){
+    let cells='';
+    for(let r=0;r<3;r++) for(let c=0;c<3;c++)
+      cells+=`<rect x="${1+c*5}" y="${1+r*5}" width="4" height="4" rx=".7"/>`;
+    return `<svg viewBox="0 0 16 16" width="${s}" height="${s}" fill="currentColor" style="display:block">${cells}</svg>`;
+  }
+  return '';
 }
 function toast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
@@ -508,6 +607,9 @@ function renderProjects(){
       <div class="pgrid" id="pgrid">
         ${db.projects.map(p=>{
           const n = countReqs(p.tree);
+          const sc = {};
+          (function walk(n){ if(!n.isRoot && !n.isFolder && n.status) sc[n.status]=(sc[n.status]||0)+1; (n.children||[]).forEach(walk); })(p.tree);
+          const statsHtml = STATUSES.filter(s=>sc[s]).map(s=>`<span class="stat-pill" style="--dot:${statusColor(s)}"><span class="dot"></span>${s} <b>${sc[s]}</b></span>`).join('');
           return `<div class="pcard" data-id="${p.id}">
             <div class="pacts">
               <button title="Rename" data-act="rename" data-id="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></button>
@@ -515,6 +617,7 @@ function renderProjects(){
             </div>
             <div class="pname">${esc(p.name)}</div>
             <div class="pdesc">${esc(p.description||'')}</div>
+            <div class="pstats">${statsHtml || '<span style="color:var(--txt-mute);font-size:11px">No requirements yet</span>'}</div>
             <div class="pmeta"><span>${n} requirements</span><span>${esc(p.createdAt||'')}</span></div>
           </div>`;
         }).join('')}
@@ -609,6 +712,7 @@ function renderListMode(){
         <div class="row2">
           <select id="f_status"><option value="">All status</option>${STATUSES.map(s=>`<option ${treeFilters.status===s?'selected':''}>${s}</option>`).join('')}</select>
           <select id="f_asil"><option value="">All ASIL</option>${ASILS.map(a=>`<option ${treeFilters.asil===a?'selected':''}>ASIL ${a}</option>`).join('')}</select>
+          <select id="f_cyber"><option value="">Cybersecurity</option><option value="Relevant" ${treeFilters.cyber==='Relevant'?'selected':''}>Relevant</option><option value="Not Relevant" ${treeFilters.cyber==='Not Relevant'?'selected':''}>Not Relevant</option></select>
           <select id="f_type"><option value="">All types</option>${TYPES.map(t=>`<option ${treeFilters.type===t?'selected':''}>${t}</option>`).join('')}</select>
         </div>
       </div>
@@ -618,13 +722,15 @@ function renderListMode(){
     <main class="pane-center" id="paneCenter"></main>
     <div class="splitter" id="spR" title="Drag to resize"></div>
     <aside class="pane-props" id="paneProps" style="width:${panePrefs.props}px"></aside>
-    <div class="drawer" id="drawer"><div class="inner" id="drawerInner"></div></div>`;
+    <div class="drawer" id="drawer" style="width:${drawerW}px"><div class="drawer-resizer" id="drawerResizer"></div><div class="inner" id="drawerInner"></div></div>`;
   document.getElementById('f_status').onchange=e=>{ treeFilters.status=e.target.value; renderTreeSidebar(); };
   document.getElementById('f_asil').onchange=e=>{ treeFilters.asil=e.target.value; renderTreeSidebar(); };
+  document.getElementById('f_cyber').onchange=e=>{ treeFilters.cyber=e.target.value; renderTreeSidebar(); };
   document.getElementById('f_type').onchange=e=>{ treeFilters.type=e.target.value; renderTreeSidebar(); };
   renderTreeSidebar();
   renderCenterAndProps();
   initSplitters();
+  initDrawerResizer();
 }
 function initSplitters(){
   const spL=document.getElementById('spL'), spR=document.getElementById('spR');
@@ -652,15 +758,38 @@ function initSplitters(){
   if(spL) spL.onmousedown=e=>startDrag(e,'L');
   if(spR) spR.onmousedown=e=>startDrag(e,'R');
 }
+function initDrawerResizer(){
+  const r=document.getElementById('drawerResizer'), d=document.getElementById('drawer');
+  if(!r||!d) return;
+  r.onmousedown=(e)=>{
+    e.preventDefault(); e.stopPropagation();
+    const startX=e.clientX; const startW=d.getBoundingClientRect().width;
+    document.body.classList.add('resizing');
+    function move(ev){
+      const dx=startX-ev.clientX;   // drag left -> wider
+      const w=Math.max(300, Math.min(Math.round(window.innerWidth*0.9), startW+dx));
+      d.style.width=w+'px'; drawerW=Math.round(w);
+    }
+    function up(){
+      document.body.classList.remove('resizing');
+      document.removeEventListener('mousemove',move);
+      document.removeEventListener('mouseup',up);
+      try{ localStorage.setItem(DRAWER_KEY, drawerW); }catch(err){}
+    }
+    document.addEventListener('mousemove',move);
+    document.addEventListener('mouseup',up);
+  };
+}
 function passesFilters(node){
   if(filter){
     const f=filter.toLowerCase();
-    const self=(node.id+' '+node.title+' '+(node.description||'')).toLowerCase().includes(f);
-    if(!self && !(node.children||[]).some(passesFilters)) return false;
+    const plain=(node.id+' '+node.title+' '+String(node.description||'').replace(/<[^>]*>/g,' ')).toLowerCase();
+    if(!plain.includes(f) && !(node.children||[]).some(passesFilters)) return false;
   }
   if(node.isRoot || node.isFolder) return true;
   if(treeFilters.status && node.status!==treeFilters.status) return false;
   if(treeFilters.asil && node.asil!==treeFilters.asil) return false;
+  if(treeFilters.cyber && node.cyber!==treeFilters.cyber) return false;
   if(treeFilters.type && node.specialChar!==treeFilters.type) return false;
   return true;
 }
@@ -681,6 +810,12 @@ function walkTree(node, depth, el){
   chev.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
   chev.onclick=(e)=>{ e.stopPropagation(); if(hasKids){ expanded.has(node.id)?expanded.delete(node.id):expanded.add(node.id); renderTreeSidebar(); } };
   row.appendChild(chev);
+  if(node.icon){
+    const ic=document.createElement('span');
+    ic.style.cssText='display:inline-flex;color:var(--txt-dim);flex:none';
+    ic.innerHTML=gridIconSVG(node.icon,13);
+    row.appendChild(ic);
+  }
   if(!node.isRoot){
     const rid=document.createElement('span'); rid.className='rid'; rid.textContent=node.id; row.appendChild(rid);
   }
@@ -695,7 +830,7 @@ function walkTree(node, depth, el){
   }
   row.onclick=()=>{ selectedId=node.id; activeTab='desc'; renderTreeSidebar(); renderCenterAndProps(); };
   el.appendChild(row);
-  const filterActive = filter || treeFilters.status || treeFilters.asil || treeFilters.type;
+  const filterActive = filter || treeFilters.status || treeFilters.asil || treeFilters.cyber || treeFilters.type;
   if(hasKids && (isOpen || filterActive)) for(const c of node.children) walkTree(c,depth+1,el);
 }
 function currentNode(){
@@ -717,6 +852,7 @@ function renderCenterAndProps(){
     <div class="tabs">
       <div class="tab ${activeTab==='desc'?'active':''}" data-t="desc">Description</div>
       <div class="tab ${activeTab==='comments'?'active':''}" data-t="comments">Comments <span class="n">${(node.comments||[]).length}</span></div>
+      <div class="tab ${activeTab==='flow'?'active':''}" data-t="flow">Status Flow</div>
       <div class="tab ${activeTab==='hist'?'active':''}" data-t="hist">Change History <span class="n">${(node.history||[]).length}</span></div>
     </div>
     <div class="tab-body" id="tabBody"></div>`;
@@ -725,9 +861,16 @@ function renderCenterAndProps(){
   props.innerHTML=`
     <div class="props-head"><span class="t">Properties</span><span class="pid">${esc(node.id)}</span></div>
     <div class="prop"><label>ID</label><div class="readonly">${esc(node.id)}</div></div>
+    <div class="prop"><label>Icon</label>
+      <div class="icon-pick">
+        <button class="icopt ${!node.icon?'sel':''}" data-icon="" title="No icon"><span style="font-size:11px;color:var(--txt-mute)">None</span></button>
+        <button class="icopt ${node.icon==='grid2'?'sel':''}" data-icon="grid2" title="2x2 grid">${gridIconSVG('grid2',16)}</button>
+        <button class="icopt ${node.icon==='grid3'?'sel':''}" data-icon="grid3" title="3x3 grid">${gridIconSVG('grid3',16)}</button>
+      </div>
+    </div>
     <div class="prop"><label>Status</label><select id="p_status">${STATUSES.map(s=>`<option ${s===node.status?'selected':''}>${s}</option>`).join('')}</select></div>
-    <div class="prop"><label>Planned Start</label><input type="date" id="p_start" value="${esc(node.plannedStart||'')}"></div>
-    <div class="prop"><label>Planned End</label><input type="date" id="p_end" value="${esc(node.plannedEnd||'')}"></div>
+    <div class="prop"><label>Planned Start</label><input type="date" id="p_start" value="${esc(toISODate(node.plannedStart))}"></div>
+    <div class="prop"><label>Planned End</label><input type="date" id="p_end" value="${esc(toISODate(node.plannedEnd))}"></div>
     <div class="prop"><label>Special Characteristic</label><select id="p_type">${TYPES.map(t=>`<option ${t===node.specialChar?'selected':''}>${t}</option>`).join('')}</select></div>
     <div class="prop"><label>Functional Safety ASIL</label><select id="p_asil">${ASILS.map(a=>`<option ${a===node.asil?'selected':''}>ASIL ${a}</option>`).join('')}</select></div>
     <div class="prop"><label>Cybersecurity Relevant</label>
@@ -755,19 +898,139 @@ function renderCenterAndProps(){
   document.getElementById('p_cyberN').onclick=()=>{ logChange(node,'cybersecurity',node.cyber,'Not Relevant'); node.cyber='Not Relevant'; save(); renderCenterAndProps(); };
   document.getElementById('p_child').onclick=()=>addChild(p,node);
   document.getElementById('p_save').onclick=()=>toast('All changes saved');
+  props.querySelectorAll('.icopt').forEach(b=>b.onclick=()=>{
+    const newIcon=b.dataset.icon||undefined;
+    logChange(node,'icon',node.icon||'(none)',newIcon||'(none)');
+    if(newIcon) node.icon=newIcon; else delete node.icon;
+    save(); renderTreeSidebar(); renderCenterAndProps();
+  });
   const pd=document.getElementById('p_del'); if(pd) pd.onclick=()=>deleteNode(p,node);
+}
+function rteHTML(id, value){
+  return `<div class="rte">
+    <div class="rte-toolbar">
+      <button class="tbtn" data-cmd="undo" title="Undo">↶</button>
+      <button class="tbtn" data-cmd="redo" title="Redo">↷</button>
+      <span class="sep"></span>
+      <select class="rteBlock"><option value="p">Paragraph</option><option value="h3">Heading</option></select>
+      <select class="rteSize"><option value="2">Small</option><option value="3" selected>Normal</option><option value="5">Large</option><option value="6">Huge</option></select>
+      <input type="color" class="rteColor" title="Text color" style="width:28px;height:28px;padding:2px;background:var(--bg-0);border:1px solid var(--line);border-radius:5px;cursor:pointer">
+      <span class="sep"></span>
+      <button class="tbtn" data-cmd="bold" title="Bold"><b>B</b></button>
+      <button class="tbtn" data-cmd="italic" title="Italic"><i>I</i></button>
+      <button class="tbtn" data-cmd="underline" title="Underline"><u>U</u></button>
+      <button class="tbtn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+      <span class="sep"></span>
+      <button class="tbtn" data-cmd="justifyLeft" title="Align left"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M3 10h11M3 15h18M3 20h11"/></svg></button>
+      <button class="tbtn" data-cmd="justifyCenter" title="Align center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5h14M8 10h8M5 15h14M8 20h8"/></svg></button>
+      <button class="tbtn" data-cmd="justifyRight" title="Align right"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18M10 10h11M3 15h18M10 20h11"/></svg></button>
+      <span class="sep"></span>
+      <button class="tbtn" data-cmd="outdent" title="Decrease indent"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10M11 12h10M11 19h10M3 5l3 3-3 3M7 12h6"/></svg></button>
+      <button class="tbtn" data-cmd="indent" title="Increase indent"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5h10M11 12h10M11 19h10M21 8l-3 3 3 3M7 12h6"/></svg></button>
+      <span class="sep"></span>
+      <button class="tbtn" data-cmd="insertUnorderedList" title="Bullet list"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"/></svg></button>
+      <button class="tbtn" data-cmd="insertOrderedList" title="Numbered list"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 5.5h1.5V8M4 10.5h2v1h-2v1h2M4 16.5h1.5l-1.5 2h2"/></svg></button>
+      <span class="sep"></span>
+      <button class="tbtn" data-act="link" title="Insert link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></button>
+      <button class="tbtn" data-act="img" title="Insert image by URL"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></button>
+      <button class="tbtn" data-act="table" title="Insert 3x3 table"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></button>
+      <button class="tbtn" data-act="mergeCell" title="Merge selected cell (with right, then below)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="13" height="14" rx="1"/><path d="M16 12h5M19 9.5L21.5 12 19 14.5"/></svg></button>
+      <button class="tbtn" data-act="splitCell" title="Split merged cell"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="13" height="14" rx="1"/><path d="M16 12h5M19 9.5L21.5 12 19 14.5" transform="rotate(180 19 12)"/></svg></button>
+    </div>
+    <div class="rte-editor" id="${id}" contenteditable="true">${value||''}</div>
+  </div>`;
+}
+function wireRte(editorId, node, key){
+  const ed=document.getElementById(editorId);
+  const bar=ed.parentElement.querySelector('.rte-toolbar');
+  ed.oninput=()=>{ node[key]=ed.innerHTML; save(); };
+  ed.onblur=()=>{ node[key]=ed.innerHTML; save(); };
+  document.execCommand('styleWithCSS', false, true);
+  bar.querySelectorAll('.tbtn[data-cmd]').forEach(b=>{
+    b.onclick=(e)=>{ e.preventDefault(); ed.focus(); document.execCommand(b.dataset.cmd, false, null); ed.oninput(); };
+  });
+  bar.querySelector('.rteBlock').onchange=e=>{ ed.focus(); document.execCommand('formatBlock', false, e.target.value); ed.oninput(); };
+  bar.querySelector('.rteSize').onchange=e=>{ ed.focus(); document.execCommand('fontSize', false, e.target.value); ed.oninput(); };
+  bar.querySelector('.rteColor').oninput=e=>{ ed.focus(); document.execCommand('foreColor', false, e.target.value); ed.oninput(); };
+  bar.querySelector('.tbtn[data-act="link"]').onclick=()=>{ ed.focus(); const url=prompt('Link URL:'); if(url){ document.execCommand('createLink', false, url); ed.oninput(); } };
+  bar.querySelector('.tbtn[data-act="img"]').onclick=()=>{ ed.focus(); const url=prompt('Image URL:'); if(url){ document.execCommand('insertImage', false, url); ed.oninput(); } };
+  bar.querySelector('.tbtn[data-act="table"]').onclick=()=>{
+    ed.focus();
+    let html='<table>';
+    for(let r=0;r<3;r++){ html+='<tr>'; for(let c=0;c<3;c++) html+='<td><br></td>'; html+='</tr>'; }
+    html+='</table><p><br></p>';
+    document.execCommand('insertHTML', false, html); ed.oninput();
+  };
+  bar.querySelector('.tbtn[data-act="mergeCell"]').onclick=()=>{
+    const td=cellInEditor(ed); if(!td){ toast('Place the cursor inside a table cell first'); return; }
+    let done=false;
+    const next=td.nextElementSibling;
+    if(next && /^(TD|TH)$/.test(next.tagName)){
+      td.setAttribute('colspan', (+td.getAttribute('colspan')||1)+(+next.getAttribute('colspan')||1));
+      next.remove(); done=true;
+    } else {
+      const row=td.parentElement; const nr=row.nextElementSibling;
+      if(nr){ const idx=Array.from(row.children).indexOf(td); const below=nr.children[idx];
+        if(below){ td.setAttribute('rowspan', (+td.getAttribute('rowspan')||1)+(+below.getAttribute('rowspan')||1)); below.remove(); done=true; } }
+    }
+    done ? (ed.oninput(), toast('Cell merged')) : toast('No adjacent cell to merge with');
+  };
+  bar.querySelector('.tbtn[data-act="splitCell"]').onclick=()=>{
+    const td=cellInEditor(ed); if(!td){ toast('Place the cursor inside a table cell first'); return; }
+    const cs=+td.getAttribute('colspan')||1, rs=+td.getAttribute('rowspan')||1;
+    if(cs===1 && rs===1){ toast('This cell is not merged'); return; }
+    if(cs>1){ td.removeAttribute('colspan'); for(let i=1;i<cs;i++){ const c=document.createElement('td'); c.innerHTML='<br>'; td.after(c); } }
+    if(rs>1){ td.removeAttribute('rowspan'); const row=td.parentElement; const idx=Array.from(row.children).indexOf(td); let r=row;
+      for(let i=1;i<rs;i++){ r=r.nextElementSibling; if(!r) break; const c=document.createElement('td'); c.innerHTML='<br>'; r.insertBefore(c, r.children[idx]||null); } }
+    ed.oninput(); toast('Cell split');
+  };
+  ed.addEventListener('keydown', e=>{
+    if(e.key==='Tab'){ e.preventDefault(); ed.focus(); document.execCommand(e.shiftKey?'outdent':'indent', false, null); ed.oninput(); }
+  });
+}
+function cellInEditor(ed){
+  const sel=window.getSelection(); if(!sel.rangeCount) return null;
+  let n=sel.anchorNode; if(!n) return null;
+  if(n.nodeType===3) n=n.parentNode;
+  const td=n && n.closest ? n.closest('td,th') : null;
+  return (td && ed.contains(td)) ? td : null;
 }
 function renderTabBody(node){
   const tb=document.getElementById('tabBody');
   if(activeTab==='desc'){
+    const fields = [
+      {key:'description', label:'Description'},
+      {key:'dependenciesAnalysis', label:'Dependencies Analysis'},
+      {key:'feasibilityAnalysis', label:'Feasibility Analysis'}
+    ];
+    tb.innerHTML =
+      `<div class="field"><label>Title</label><input type="text" class="big" id="f_title" value="${esc(node.title)}"></div>` +
+      fields.map(f=>`<div class="field"><label>${f.label}</label>${rteHTML('rte_'+f.key, node[f.key])}</div>`).join('') +
+      `<div class="field"><label>Verification Criteria</label><textarea id="f_verify" rows="4">${esc(node.verificationCriteria||'')}</textarea></div>`;
+    const title=document.getElementById('f_title');
+    title.onchange=()=>{ logChange(node,'title',node.title,title.value); node.title=title.value; save(); renderTreeSidebar(); renderCenterAndProps(); };
+    fields.forEach(f=> wireRte('rte_'+f.key, node, f.key));
+    const vf=document.getElementById('f_verify');
+    vf.onchange=()=>{ logChange(node,'verificationCriteria',node.verificationCriteria,vf.value); node.verificationCriteria=vf.value; save(); };
+  } else if(activeTab==='flow'){
+    const idx=STATUSES.indexOf(node.status);
     tb.innerHTML=`
-      <div class="field"><label>Title</label><input type="text" class="big" id="f_title" value="${esc(node.title)}"></div>
-      <div class="field"><label>Description</label><textarea id="f_desc" rows="6">${esc(node.description||'')}</textarea></div>
-      <div class="field"><label>Verification Criteria</label><textarea id="f_verify" rows="5">${esc(node.verificationCriteria||'')}</textarea></div>`;
-    const bindT=(id,key,refreshTree)=>{ const e=document.getElementById(id); e.onchange=()=>{ logChange(node,key,node[key],e.value); node[key]=e.value; save(); if(refreshTree) renderTreeSidebar(); renderCenterAndProps(); }; };
-    bindT('f_title','title',true);
-    bindT('f_desc','description',false);
-    bindT('f_verify','verificationCriteria',false);
+      <div class="flow">
+        ${STATUSES.map((s,i)=>{
+          const cls = i<idx ? 'done' : i===idx ? 'active' : 'todo';
+          const arrow = i<STATUSES.length-1 ? `<div class="flow-arrow ${i<idx?'done':''}"></div>` : '';
+          return `<div class="flow-node ${cls}" data-st="${s}">
+            <div class="circle">${i<idx?'✓':(i+1)}</div>
+            <div class="lbl">${s}</div>
+          </div>${arrow}`;
+        }).join('')}
+      </div>
+      <p style="color:var(--txt-mute);font-size:12px;margin-top:18px">Current stage is highlighted. Click any node to move the requirement to that status.</p>`;
+    tb.querySelectorAll('.flow-node').forEach(n=>n.onclick=()=>{
+      logChange(node,'status',node.status,n.dataset.st);
+      node.status=n.dataset.st; save();
+      renderTreeSidebar(); renderCenterAndProps(); toast('Status set to '+node.status);
+    });
   } else if(activeTab==='comments'){
     tb.innerHTML=`
       <div class="c-list">
@@ -821,8 +1084,9 @@ function renderGraphMode(){
       <div class="g-hint">Click a node to inspect the requirement. Drag to pan, scroll to zoom.</div>
       <div id="graph"></div>
     </div>
-    <div class="drawer" id="drawer"><div class="inner" id="drawerInner"></div></div>`;
+    <div class="drawer" id="drawer" style="width:${drawerW}px"><div class="drawer-resizer" id="drawerResizer"></div><div class="inner" id="drawerInner"></div></div>`;
   setTimeout(()=>drawGraph(p), 30);
+  initDrawerResizer();
 }
 function buildGraphNode(node){
   return {
@@ -879,10 +1143,10 @@ function openDrawer(p,id){
       <span class="badge asil asil-${esc(node.asil||'QM')}">ASIL ${esc(node.asil||'QM')}</span>
       <span class="badge">Cyber: ${esc(node.cyber||'Not Relevant')}</span>
     </div>
-    <div class="card" style="margin-bottom:12px"><label>Description</label><div style="white-space:pre-wrap;font-size:13px">${esc(node.description||'—')}</div></div>
+    <div class="card" style="margin-bottom:12px"><label>Description</label><div style="font-size:13px;line-height:1.6">${node.description||'<span style="color:var(--txt-mute)">—</span>'}</div></div>
     <div class="card" style="margin-bottom:12px"><label>Planned dates</label>
-      <div class="kv"><span class="k">Start</span><span class="v">${esc(node.plannedStart||'—')}</span></div>
-      <div class="kv"><span class="k">End</span><span class="v">${esc(node.plannedEnd||'—')}</span></div>
+      <div class="kv"><span class="k">Start</span><span class="v">${esc(fmtDate(node.plannedStart))}</span></div>
+      <div class="kv"><span class="k">End</span><span class="v">${esc(fmtDate(node.plannedEnd))}</span></div>
     </div>
     <div class="card" style="margin-bottom:12px"><label>Verification criteria</label><div style="white-space:pre-wrap;font-size:13px">${esc(node.verificationCriteria||'—')}</div></div>
     <div class="card comments">
@@ -927,6 +1191,13 @@ function openProfileModal(){
       <input type="file" id="pf_file" accept="image/*" style="display:none">
     </div>
     <div class="fld"><label class="fld">Display name</label><input type="text" id="pf_name" value="${esc(u.displayName)}"></div>
+    <div class="fld"><label class="fld">Theme</label>
+      <div class="icon-pick" style="gap:10px">
+        <button class="icopt theme-opt ${(u.theme||'darkblue')==='darkblue'?'sel':''}" data-theme="darkblue" style="width:auto;padding:0 12px;height:36px;flex-direction:row;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:linear-gradient(135deg,#5eb1ef,#2563eb)"></span>Dark-blue</button>
+        <button class="icopt theme-opt ${u.theme==='dark'?'sel':''}" data-theme="dark" style="width:auto;padding:0 12px;height:36px;flex-direction:row;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:#1d222a;border:1px solid #333"></span>Dark</button>
+        <button class="icopt theme-opt ${u.theme==='light'?'sel':''}" data-theme="light" style="width:auto;padding:0 12px;height:36px;flex-direction:row;gap:8px"><span style="width:14px;height:14px;border-radius:3px;background:#fff;border:1px solid #cfd6e2"></span>Light gray</button>
+      </div>
+    </div>
     <div class="fld"><label class="fld">Email</label><input type="email" id="pf_email" value="${esc(u.email||'')}"></div>
     <div class="fld"><label class="fld">Username</label><input type="text" value="${esc(u.username)}" disabled style="opacity:.6"></div>
     <div class="fld"><label class="fld">New password (leave blank to keep)</label><input type="password" id="pf_pass"></div>
@@ -951,9 +1222,16 @@ function openProfileModal(){
   };
   const rm=document.getElementById('pf_removeLogo');
   if(rm) rm.onclick=()=>{ delete u.profileLogo; save(); document.getElementById('pf_avatar').innerHTML=avatarInner(u); const av=document.getElementById('avatarBtn'); if(av) av.innerHTML=avatarInner(u); toast('Logo removed'); };
+  let pendingTheme=(u.theme||'darkblue');
+  document.querySelectorAll('.theme-opt').forEach(b=>b.onclick=()=>{
+    pendingTheme=b.dataset.theme;
+    u.theme=pendingTheme; save(); applyTheme();
+    document.querySelectorAll('.theme-opt').forEach(x=>x.classList.toggle('sel',x.dataset.theme===pendingTheme));
+  });
   document.getElementById('pf_save').onclick=()=>{
     u.displayName=document.getElementById('pf_name').value.trim()||u.username;
     u.email=document.getElementById('pf_email').value.trim();
+    u.theme=pendingTheme;
     const np=document.getElementById('pf_pass').value;
     if(np) u.password=np;
     save(); closeModal(); renderWorkspaceOrHome(); toast('Profile saved');
@@ -973,6 +1251,7 @@ function openModal(html){
 function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
 
 /* boot */
+applyTheme();
 route();
 </script>
 </body>
