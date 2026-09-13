@@ -860,7 +860,7 @@ function renderCenterAndProps(){
   renderTabBody(node);
   props.innerHTML=`
     <div class="props-head"><span class="t">Properties</span><span class="pid">${esc(node.id)}</span></div>
-    <div class="prop"><label>ID</label><div class="readonly">${esc(node.id)}</div></div>
+    <div class="prop"><label>ID ${node.isRoot?'(read-only)':'(editable)'}</label><input type="text" id="p_id" value="${esc(node.id)}" ${node.isRoot?'disabled':''}></div>
     <div class="prop"><label>Icon</label>
       <div class="icon-pick">
         <button class="icopt ${!node.icon?'sel':''}" data-icon="" title="No icon"><span style="font-size:11px;color:var(--txt-mute)">None</span></button>
@@ -896,6 +896,21 @@ function renderCenterAndProps(){
   bindProp('p_asil','asil',true);
   document.getElementById('p_cyberY').onclick=()=>{ logChange(node,'cybersecurity',node.cyber,'Relevant'); node.cyber='Relevant'; save(); renderCenterAndProps(); };
   document.getElementById('p_cyberN').onclick=()=>{ logChange(node,'cybersecurity',node.cyber,'Not Relevant'); node.cyber='Not Relevant'; save(); renderCenterAndProps(); };
+  const pId=document.getElementById('p_id');
+  if(pId && !node.isRoot){
+    pId.onchange=()=>{
+      const v=pId.value.trim();
+      if(!v){ pId.value=node.id; toast('ID cannot be empty'); return; }
+      if(v===node.id) return;
+      let dup=false;
+      (function walk(n){ if(n.id===v) dup=true; (n.children||[]).forEach(walk); })(p.tree);
+      if(dup){ pId.value=node.id; toast('ID "'+v+'" already exists'); return; }
+      logChange(node,'ID',node.id,v);
+      selectedId=v;
+      node.id=v; save(); renderTreeSidebar(); renderCenterAndProps();
+      toast('ID renamed to '+v);
+    };
+  }
   document.getElementById('p_child').onclick=()=>addChild(p,node);
   document.getElementById('p_save').onclick=()=>toast('All changes saved');
   props.querySelectorAll('.icopt').forEach(b=>b.onclick=()=>{
@@ -1054,8 +1069,11 @@ function renderTabBody(node){
   }
 }
 function addChild(p,parent){
-  let prefix='REQ';
-  if(parent.id==='SYS') prefix='REQ-SYS'; else if(parent.id==='SW') prefix='REQ-SW'; else if(parent.id==='HW') prefix='REQ-HW';
+  let prefix = 'REQ';
+  if(!parent.isRoot){
+    const stem=(parent.id||'').replace(/[-\s]?\d+$/,'')||parent.id;
+    prefix = /^REQ[-_]/i.test(stem) ? stem : 'REQ-'+stem;
+  }
   const id=nextId(prefix, p.tree);
   parent.children=parent.children||[];
   parent.children.push({ id, title:'New requirement '+id, description:'', status:'Draft',
@@ -1201,6 +1219,15 @@ function openProfileModal(){
     <div class="fld"><label class="fld">Email</label><input type="email" id="pf_email" value="${esc(u.email||'')}"></div>
     <div class="fld"><label class="fld">Username</label><input type="text" value="${esc(u.username)}" disabled style="opacity:.6"></div>
     <div class="fld"><label class="fld">New password (leave blank to keep)</label><input type="password" id="pf_pass"></div>
+    <div class="fld" style="border-top:1px solid var(--line);padding-top:14px;margin-top:6px">
+      <label class="fld">Backup &amp; Restore</label>
+      <div style="font-size:12px;color:var(--txt-mute);margin-bottom:8px">Data is stored only in this browser. Export a JSON backup regularly (recommended). Import restores from a backup file.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="pf_export" style="flex:1">Export JSON</button>
+        <button class="btn" id="pf_import" style="flex:1">Import JSON</button>
+        <input type="file" id="pf_importFile" accept="application/json" style="display:none">
+      </div>
+    </div>
     <div class="m-actions">
       <button class="btn" onclick="closeModal()">Close</button>
       <button class="btn primary" id="pf_save">Save</button>
@@ -1228,6 +1255,30 @@ function openProfileModal(){
     u.theme=pendingTheme; save(); applyTheme();
     document.querySelectorAll('.theme-opt').forEach(x=>x.classList.toggle('sel',x.dataset.theme===pendingTheme));
   });
+  document.getElementById('pf_export').onclick=()=>{
+    const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='reqtoolk-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    a.click(); URL.revokeObjectURL(a.href);
+    toast('Backup exported');
+  };
+  const impFile=document.getElementById('pf_importFile');
+  document.getElementById('pf_import').onclick=()=>impFile.click();
+  impFile.onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const obj=JSON.parse(r.result);
+        if(!obj.users||!obj.projects) throw new Error('bad file');
+        if(!confirm('Import will REPLACE all current data. Continue?')) return;
+        localStorage.setItem(DB_KEY, JSON.stringify(obj));
+        db=obj; closeModal(); route(); toast('Backup restored');
+      }catch(err){ toast('Invalid backup file'); }
+    };
+    r.readAsText(f);
+  };
   document.getElementById('pf_save').onclick=()=>{
     u.displayName=document.getElementById('pf_name').value.trim()||u.username;
     u.email=document.getElementById('pf_email').value.trim();
